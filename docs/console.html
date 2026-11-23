@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ignis Console — Chat Through the Pyr Neural Network</title>
+<meta name="description" content="Chat with Ignis through the live Prometheon SI gateway, with the live routing surface — model types, vendors, Approved models — read from the gateway catalog.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<script src="/gateway-config.js"></script>
+<script src="/gateway-client.js"></script>
+</head>
+<body>
+<div class="ticker">Full Beta Release 2/1/2027</div>
+<header class="site-header">
+  <a class="brand" href="/"><img src="/logo-lockup.png" alt="Prometheon SI"></a>
+  <nav class="site-nav">
+    <a href="/">Home</a>
+    <a href="/architecture.html">Architecture</a>
+    <a href="https://prometheon.si">Prometheon SI</a>
+    <a href="https://lampasagents.si">Lampas</a>
+    <a class="cta" href="/console.html">Open Console</a>
+  </nav>
+</header>
+<main>
+  <h1>Ignis Console</h1>
+  <p class="muted">Chat with Ignis through the live Prometheon SI gateway — the same
+  accounts as <a href="https://prometheon.si">prometheon.si</a>. This console is locked to
+  the Ignis platform: the gateway hands each turn to the Ignis HTTP service, and replies
+  show the route that answered.</p>
+  <p class="status-line" id="gw-status">Gateway: probing…</p>
+
+  <div class="panel" id="auth-panel">
+    <h3>Sign in</h3>
+    <p class="muted small">Use your Prometheon SI account. New here? Create one — signup
+    grants a free-trial wallet credit; no payment is taken.</p>
+    <form class="auth-form" id="auth-form">
+      <label for="auth-name">Name (signup only)</label>
+      <input id="auth-name" type="text" autocomplete="name">
+      <label for="auth-email">Email</label>
+      <input id="auth-email" type="email" autocomplete="email" required>
+      <label for="auth-password">Password</label>
+      <input id="auth-password" type="password" autocomplete="current-password" required>
+      <div class="auth-actions">
+        <button class="btn" type="submit" id="login-btn">Log in</button>
+        <button class="btn secondary" type="button" id="signup-btn">Sign up</button>
+      </div>
+      <p class="small" id="auth-error" style="color:var(--danger)"></p>
+    </form>
+  </div>
+
+  <div id="console-panel" hidden>
+    <p class="status-line">Signed in as <span id="who"></span>
+      <button class="btn secondary" type="button" id="logout-btn">Log out</button></p>
+    <div class="console-layout">
+      <div class="panel">
+        <h3>Chat — Ignis</h3>
+        <div class="chat-log" id="chat-log"></div>
+        <form class="composer" id="composer">
+          <textarea id="composer-input" placeholder="Ask Ignis…" aria-label="Message for Ignis"></textarea>
+          <button class="btn" type="submit" id="send-btn">Send</button>
+        </form>
+        <p class="small muted" id="chat-note"></p>
+      </div>
+      <div>
+        <div class="panel" id="routing-panel">
+          <h3>Routing &amp; Memory — live surface</h3>
+          <dl id="routing-fields"><dt>Status</dt><dd>Reading gateway /health and /catalog…</dd></dl>
+          <p class="small muted">Counts are read live from the gateway catalog: model
+          types, vendors, and Approved models — the routing surface Ignis chooses from.
+          Anything the gateway does not expose is labeled as such.</p>
+          <button class="btn secondary" type="button" id="routing-refresh">Refresh</button>
+        </div>
+        <div class="panel" style="margin-top:1rem">
+          <h3>K1 — One Memory</h3>
+          <p class="small muted" style="margin:0">One Memory is one shared memory store
+          across models and services. As built in the pilot, a single SQLite memory is
+          shared by the command-line tools, the demo, and the Ignis HTTP service, so what
+          one surface learns is available to the others. Failed-output write-back is
+          quarantined — output that fails verification is not written into the shared
+          memory.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<footer class="site-footer">
+  <p class="tagline">Powering human achievement.</p>
+  <nav>
+    <a href="https://prometheon.si">Prometheon SI</a>
+    <a href="https://lampasagents.si">Lampas</a>
+    <a href="/console.html">Console</a>
+    <a href="/architecture.html">Architecture</a>
+  </nav>
+  <p class="version">v1.00</p>
+  <p class="copyright">Artificial Intelligence Designed Exclusively by the American Business Capital Group, Inc. © 2026 All Rights Reserved</p>
+</footer>
+<script>
+(function () {
+  "use strict";
+  var G = window.PrometheonGateway;
+  var gwStatus = document.getElementById("gw-status");
+  var authPanel = document.getElementById("auth-panel");
+  var consolePanel = document.getElementById("console-panel");
+  var chatLog = document.getElementById("chat-log");
+  var chatNote = document.getElementById("chat-note");
+  var sendBtn = document.getElementById("send-btn");
+  var gatewayOk = false;
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function fieldList(obj, el) {
+    var html = "";
+    Object.keys(obj).forEach(function (k) {
+      var v = obj[k];
+      if (v && typeof v === "object") v = JSON.stringify(v);
+      html += "<dt>" + esc(k) + "</dt><dd>" + esc(v) + "</dd>";
+    });
+    el.innerHTML = html || "<dt>Status</dt><dd>not exposed by gateway</dd>";
+  }
+
+  function probe() {
+    return G.discover().then(function (base) {
+      gatewayOk = true;
+      gwStatus.innerHTML = 'Gateway: <span class="ok">reachable</span> — ' + esc(base);
+      refreshRouting();
+    }).catch(function () {
+      gatewayOk = false;
+      gwStatus.innerHTML = 'Gateway: <span class="bad">unreachable</span> — the console ' +
+        'cannot run until the gateway answers. Nothing is simulated in its place.';
+      sendBtn.disabled = true;
+    });
+  }
+
+  function refreshRouting() {
+    var el = document.getElementById("routing-fields");
+    var out = {};
+    var hp = G.health().then(function (h) {
+      out.service = h.service || "not exposed by gateway";
+      out.status = h.status || "not exposed by gateway";
+      var platforms = h.platforms || null;
+      if (platforms && platforms.ignis !== undefined) {
+        out["platforms.ignis"] = platforms.ignis;
+      } else {
+        out["platforms.ignis"] = "not exposed by gateway";
+      }
+    }).catch(function () { out.health = "gateway unreachable"; });
+    var cp = G.catalog().then(function (c) {
+      out["model types"] = Array.isArray(c.model_types) ? c.model_types.length : "not exposed by gateway";
+      out.vendors = Array.isArray(c.vendors) ? c.vendors.length : "not exposed by gateway";
+      out["approved models"] = Array.isArray(c.models) ? c.models.length : "not exposed by gateway";
+    }).catch(function () { out.catalog = "not exposed by gateway"; });
+    Promise.all([hp, cp]).then(function () { fieldList(out, el); });
+  }
+  document.getElementById("routing-refresh").addEventListener("click", refreshRouting);
+
+  function showConsole(email) {
+    authPanel.hidden = true;
+    consolePanel.hidden = false;
+    document.getElementById("who").textContent = email || "";
+    if (!gatewayOk) sendBtn.disabled = true;
+  }
+  function showAuth() {
+    authPanel.hidden = false;
+    consolePanel.hidden = true;
+  }
+
+  function authError(msg) { document.getElementById("auth-error").textContent = msg || ""; }
+  document.getElementById("auth-form").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    authError("");
+    G.login(document.getElementById("auth-email").value,
+            document.getElementById("auth-password").value)
+      .then(function (d) { showConsole(d.user && d.user.email); })
+      .catch(function (e) { authError("Login failed: " + e.message); });
+  });
+  document.getElementById("signup-btn").addEventListener("click", function () {
+    authError("");
+    G.signup(document.getElementById("auth-email").value,
+             document.getElementById("auth-password").value,
+             document.getElementById("auth-name").value)
+      .then(function (d) { showConsole(d.user && d.user.email); })
+      .catch(function (e) { authError("Signup failed: " + e.message); });
+  });
+  document.getElementById("logout-btn").addEventListener("click", function () {
+    G.logout(); showAuth();
+  });
+
+  function addMsg(role, content, meta) {
+    var div = document.createElement("div");
+    div.className = "msg " + role;
+    div.textContent = content;
+    if (meta) {
+      var m = document.createElement("span");
+      m.className = "meta"; m.textContent = meta;
+      div.appendChild(m);
+    }
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return div;
+  }
+
+  document.getElementById("composer").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var input = document.getElementById("composer-input");
+    var text = input.value.trim();
+    if (!text || !gatewayOk) return;
+    input.value = "";
+    sendBtn.disabled = true;
+    chatNote.textContent = "";
+    addMsg("user", text);
+    var pending = addMsg("assistant", "Ignis is routing…");
+    // Platform lock: this console only ever runs the Ignis platform.
+    G.sendChat({platform:"ignis", message:text}).then(function (data) {
+      var msg = data.message || {};
+      var route = msg.route || {};
+      var routeLabel = route.route_label ||
+        [route.model_type, route.vendor, route.model].filter(Boolean).join(" · ");
+      pending.textContent = msg.content || "(no content returned)";
+      var run = data.run || {};
+      var metaBits = [];
+      if (routeLabel) metaBits.push("Route: " + routeLabel);
+      if (run.fence_status) metaBits.push("Fence: " + run.fence_status);
+      if (run.tokens != null) metaBits.push(run.tokens + " tokens");
+      if (metaBits.length) {
+        var m = document.createElement("span");
+        m.className = "meta"; m.textContent = metaBits.join(" · ");
+        pending.appendChild(m);
+      }
+      refreshRouting();
+    }).catch(function (e) {
+      pending.textContent = "Request failed: " + e.message;
+    }).finally(function () {
+      sendBtn.disabled = !gatewayOk ? true : false;
+    });
+  });
+
+  if (G.isLoggedIn()) {
+    G.me().then(function (d) { showConsole(d.user && d.user.email); })
+         .catch(function () { G.logout(); showAuth(); });
+  }
+  probe();
+})();
+</script>
+</body>
+</html>

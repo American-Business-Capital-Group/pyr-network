@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ignis Architecture — Where the Pyr Neural Network Sits</title>
+<meta name="description" content="Where Ignis sits: the Pyr Neural Network layer under Prometheon SI, routing for Prometheon SI and Lampas, grounded in the pilot build.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+</head>
+<body>
+<div class="ticker">Full Beta Release 2/1/2027</div>
+<header class="site-header">
+  <a class="brand" href="/"><img src="/logo-lockup.png" alt="Prometheon SI"></a>
+  <nav class="site-nav">
+    <a href="/">Home</a>
+    <a href="/architecture.html">Architecture</a>
+    <a href="https://prometheon.si">Prometheon SI</a>
+    <a href="https://lampasagents.si">Lampas</a>
+    <a class="cta" href="/console.html">Open Console</a>
+  </nav>
+</header>
+<main>
+  <h1>Where Ignis sits</h1>
+  <p class="lede">Ignis is the Pyr Neural Network layer. Prometheon SI and Lampas sit on
+  top of it; the models sit below it. Ignis is the layer in between that routes the work,
+  holds the shared memory, and carries context across the boundaries.</p>
+
+  <section>
+    <h2>The stack</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Platforms</h3>
+        <p><a href="https://prometheon.si">Prometheon SI</a> (the aggregate model and
+        unified app) and <a href="https://lampasagents.si">Lampas</a> (the recursive
+        engine) take in work from users and agents. Neither talks to models directly —
+        both go through the network layer.</p>
+      </div>
+      <div class="card">
+        <h3>Ignis — Pyr Neural Network</h3>
+        <p>K5 intent routing decides which model type, vendor, and model should answer;
+        K1 One Memory holds the shared memory every surface reads and writes; K3 carries
+        context with the task as it moves.</p>
+      </div>
+      <div class="card">
+        <h3>Models</h3>
+        <p>The catalog of Approved models — local and API-served — that actually generate
+        the answers. Lifecycle state (Candidate → Approved → Disabled) is enforced at
+        this boundary, at routing and at the Fence.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Routing: the K5 path</h2>
+    <p>On the Prometheon platform the flow is: Input Prompt → Process Manager (classify
+    and decompose) → Decision Intelligence and Reasoning → Decision Options — Model Type,
+    then Vendor, then Model — → Output Generator → Model Output. In Auto mode the K5
+    router decides the options using a difficulty rubric; in manual mode a user's pick is
+    validated against the roster, Approved records only. Output passes K6 verification
+    with escalation before it is returned, and every turn is a Fence-registered,
+    traced run.</p>
+    <p>Ignis-platform chats take the shorter path: the gateway hands the turn to the
+    Ignis HTTP service, which answers through the same routing and memory layer.</p>
+  </section>
+
+  <section>
+    <h2>Memory: One Memory as built</h2>
+    <p>In the pilot, One Memory is one SQLite memory store shared by three surfaces at
+    once: the command-line tools, the generational demo, and the Ignis HTTP service. A
+    fact written through one surface is readable through the others, across models —
+    demonstrated live in cross-model runs. Failed-output write-back is quarantined, so a
+    run whose output failed verification does not write that output into the shared
+    memory; that fix was made and re-verified clean in the pilot after the failure mode
+    was caught.</p>
+  </section>
+
+  <section>
+    <h2>Grounded in the pilot</h2>
+    <div class="notice">
+      <p>Everything on this page describes the pilot build as it stands: Ignis running as
+      a live HTTP service on the pilot host, the gateway routing Ignis chats to it, the
+      shared SQLite memory across CLI, demo, and service, and lifecycle enforced at
+      routing. The console's Routing &amp; Memory panel reads the gateway's live
+      /health and /catalog so the numbers shown are the current routing surface, not
+      figures copied into this page.</p>
+    </div>
+    <p><a class="btn" href="/console.html">Open the Ignis Console</a></p>
+  </section>
+</main>
+<footer class="site-footer">
+  <p class="tagline">Powering human achievement.</p>
+  <nav>
+    <a href="https://prometheon.si">Prometheon SI</a>
+    <a href="https://lampasagents.si">Lampas</a>
+    <a href="/console.html">Console</a>
+    <a href="/architecture.html">Architecture</a>
+  </nav>
+  <p class="version">v1.00</p>
+  <p class="copyright">Artificial Intelligence Designed Exclusively by the American Business Capital Group, Inc. © 2026 All Rights Reserved</p>
+</footer>
+</body>
+</html>

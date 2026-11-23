@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ignis by Pyr Neural Network — Routing, Memory, Context</title>
+<meta name="description" content="Ignis is the Pyr Neural Network layer under Prometheon SI: K5 intent routing, K1 One Memory, and K3 context that travels. A live HTTP service on the pilot host.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+</head>
+<body>
+<div class="ticker">Full Beta Release 2/1/2027</div>
+<header class="site-header">
+  <a class="brand" href="/"><img src="/logo-lockup.png" alt="Prometheon SI"></a>
+  <nav class="site-nav">
+    <a href="/">Home</a>
+    <a href="/architecture.html">Architecture</a>
+    <a href="https://prometheon.si">Prometheon SI</a>
+    <a href="https://lampasagents.si">Lampas</a>
+    <a class="cta" href="/console.html">Open Console</a>
+  </nav>
+</header>
+<main>
+  <div class="hero">
+    <img class="lockup" src="/logo-lockup.png" alt="Prometheon SI">
+    <h1>Ignis</h1>
+    <p class="tagline">Powering human achievement.</p>
+    <p class="lede">Ignis is the Pyr Neural Network layer under
+    <a href="https://prometheon.si">Prometheon SI</a> — the routing, memory, and context
+    layer every Prometheon platform runs on. Ignis runs today as a live HTTP service on
+    the pilot host, and this site is its own front door to the same live gateway.</p>
+    <p><a class="btn" href="/console.html">Open the Ignis Console</a>
+    <a class="btn secondary" href="/architecture.html">Architecture</a></p>
+  </div>
+
+  <section>
+    <h2>What Ignis does</h2>
+    <p>Models and agent engines are interchangeable parts unless something underneath
+    decides which one should answer, remembers what has already happened, and carries
+    that context to the next step. That underneath is Ignis — the Pyr Neural Network
+    layer. Three of Prometheon's key concepts are implemented here:</p>
+  </section>
+
+  <div class="grid">
+    <div class="card">
+      <h3>K5 — Intent Routing</h3>
+      <p>Each prompt is semantically classified and routed to the model type, vendor, and
+      model that fit it, instead of a fixed default. Routing respects lifecycle: only
+      Approved models serve, and lifecycle state is enforced at routing time.</p>
+    </div>
+    <div class="card">
+      <h3>K1 — One Memory</h3>
+      <p>One shared memory across models and services, instead of each tool keeping its
+      own silo. In the pilot, a single SQLite memory is shared by the command-line tools,
+      the demo, and the HTTP service — demonstrated live, across models.</p>
+    </div>
+    <div class="card">
+      <h3>K3 — Context That Travels</h3>
+      <p>Context moves with the work: when a task is routed to a different model or handed
+      to another platform, the relevant context travels with it rather than being
+      re-explained or lost at the boundary.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2>Live today</h2>
+    <p>Ignis is not a roadmap item. It runs as a live HTTP service on the pilot host, and
+    the Prometheon SI gateway answers Ignis-platform chats through that service. The
+    console on this site talks to the same gateway with the same accounts as
+    <a href="https://prometheon.si">prometheon.si</a>, locked to the Ignis platform, and
+    its Routing &amp; Memory panel reads the live catalog counts from the gateway —
+    model types, vendors, and Approved models — rather than quoting static numbers.</p>
+    <div class="notice">
+      <p><strong>What One Memory means here, exactly:</strong> the pilot demonstrated one
+      shared memory store used across models and across the CLI, demo, and HTTP service
+      surfaces. That is the claim — a shared, working memory layer — stated at the scope
+      it was demonstrated.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>One platform, several doors</h2>
+    <p>Ignis is one of the platforms of <a href="https://prometheon.si">Prometheon SI</a>,
+    and the layer the others run on: it routes for Prometheon SI and for
+    <a href="https://lampasagents.si">Lampas</a>, the recursive engine. The other doors:
+    <a href="https://prometheon.si">Prometheon SI</a> (the unified app),
+    <a href="https://lampasagents.si">Lampas SI by Pyr Neural Network</a>, and AI
+    Civilization and Legacy Agents SI inside the
+    <a href="https://prometheon.si/chat">Prometheon SI chat</a>.</p>
+  </section>
+</main>
+<footer class="site-footer">
+  <p class="tagline">Powering human achievement.</p>
+  <nav>
+    <a href="https://prometheon.si">Prometheon SI</a>
+    <a href="https://lampasagents.si">Lampas</a>
+    <a href="/console.html">Console</a>
+    <a href="/architecture.html">Architecture</a>
+  </nav>
+  <p class="version">v1.00</p>
+  <p class="copyright">Artificial Intelligence Designed Exclusively by the American Business Capital Group, Inc. © 2026 All Rights Reserved</p>
+</footer>
+</body>
+</html>
